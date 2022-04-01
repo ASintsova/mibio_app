@@ -1,36 +1,59 @@
 import streamlit as st
 import tarfile
 from pathlib import Path
+import yaml
+
 
 # Custom imports
 from multipage import MultiPage
-from pages import PCA, DiffAb, Summary
-st.set_page_config(page_title="mBARq App", layout='wide')
+from pages import PCA, DiffAb, Summary, Pathway, Assembly, Expression, Home
+st.set_page_config(page_title="NCCR Microbiomes ETHZ", layout='wide')
 
-DATADIR = Path('./data/test')
-# Create an instance of the app
-app = MultiPage()
-# Title of the main page
-st.title("NCCR Microbiomes ETHZ prototype")
-app.add_page("PCA", PCA.app)
+DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq')
+
+#DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/assembly_test')
 # fname = st.sidebar.file_uploader('Project Results', accept_multiple_files=False)
 # if not fname:
 #     st.stop()
 # tar = tarfile.open(fileobj=fname, mode="r:gz")
 # tar.extractall(DATADIR)
-# project_sites = [s.name for s in DATADIR.glob('**/*') if not s.is_file()]
-# project_name = project_sites[0]
+
+
+with open(DATADIR/"pages.yaml") as fh:
+    config = yaml.safe_load(fh)
+
+st.title("NCCR Microbiomes ETHZ")
+
+
+# Create an instance of the app
+app = MultiPage()
+project_sites = config['pages']
+
+results = {
+           'Summary': ('Summary', Summary.app, DATADIR),
+           'PCA': ('PCA', PCA.app, DATADIR),
+           'DiffAb': ('Differential Expression/Abundance', DiffAb.app, DATADIR),
+           'Path': ('Pathway Analysis',  Pathway.app, DATADIR),
+           'Expression': ('Expression', Expression.app, DATADIR),
+           'Assembly': ('Assembly', Assembly.app, DATADIR)}
+
+results = {'Home': ('Home', Home.app, DATADIR),
+           'PCA': ('PCA', PCA.app, DATADIR),
+           'DiffAb': ('Differential Expression/Abundance', DiffAb.app, DATADIR)}
+for page_name, page in results.items():
+    if page_name not in project_sites:
+        continue
+    app.add_page(page[0], page[1], page[2])
+
+#app.add_page('Assembly', Assembly.app)
+#app.add_page('Pathway Analysis', Pathway.app)
+#app.add_page('Differential Expression', DiffAb.app)
+
+
+
+
 #
-# st.header(f'Project Name: {project_name}')
-#
-# results = {'Summary': ('Summary', Summary.app),
-#            'PCA': ('PCA', PCA.app),
-#            'DiffAb': ('Differential Expression/Abundance', DiffAb.app)}
-#
-# for page_name, page in results.items():
-#     if page_name not in project_sites:
-#         continue
-#     app.add_page(page[0], page[1])
+
 
 #app.add_page("Analyse featureCounts Data", featureCounts_analysis.app)
 #app.add_page("Explore DE analysis results", explore_results.app)

@@ -4,6 +4,8 @@ from sklearn.decomposition import PCA
 import numpy as np
 import plotly.express as px
 
+from pathlib import Path
+
 def find_PCs(countData, sampleData, numPCs=2, numGenes=None, choose_by='variance'):
     """
     :param countData: each column is a sampleID, index is featureID
@@ -32,13 +34,14 @@ def find_PCs(countData, sampleData, numPCs=2, numGenes=None, choose_by='variance
     return pDf2, pc_var
 
 
-def app():
+def app(datadir):
+    st.write(datadir)
+    DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq')
 
     st.write('## PCA')
-    # todo functionalize
-    sampleData = pd.read_csv("./data/test/SL1344_test/PCA/mageck_14_2_batch.txt", sep="\t", index_col=0)
-    countData = pd.read_csv("./data/test/SL1344_test/PCA/test8.normalized.txt", sep="\t", index_col=0).drop("Gene", axis=1)
-    countData = np.log2(countData + 0.5)
+
+    sampleData = pd.read_csv(DATADIR/"sampleData.csv", index_col=0)
+    countData = pd.read_csv(list(DATADIR.glob("*pca.csv"))[0], index_col=0)
 
     c1, c2 = st.columns((4, 1))
     c2.write('### PCA Options')
@@ -79,4 +82,5 @@ def app():
     c3.plotly_chart(fig2)
     c4.write(f'### PCs summarized by {pcVar}')
     c4.plotly_chart(px.imshow(pDf_sum), use_container_width=True)
+
 
