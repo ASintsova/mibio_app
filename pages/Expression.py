@@ -4,63 +4,47 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
+from itertools import cycle
 import plotly.express as px
+import yaml
 
 def app(datadir):
-    st.write('Pathway test')
+    st.subheader('Gene Expression')
+    with open(datadir / "pages.yaml") as fh:
+        config = yaml.safe_load(fh)
+
     clrs = px.colors.qualitative.Plotly
-    # fdf = pd.read_csv('/Users/ansintsova/git_repos/nguyenb_tnseq/data/10_21_pathway_enrichment/final_results_annotated.csv')
-    # fdf = fdf[['Name', 'z-score', 'zscore_padj', 'day', 'library']]
-    #
-    # gmt_file = "/Users/ansintsova/git_repos/nguyenb_tnseq/data/10_21_pathway_enrichment/07-10-ko.gmt"
-    # genes = []
-    # paths = []
-    # with open(gmt_file, 'r') as fh:
-    #     for line in fh.readlines():
-    #         for gene in line.split('\t')[1:]:
-    #             genes.append(gene)
-    #             paths.append(line.split('\t')[0])
-    # df = pd.DataFrame([genes, paths], index=['Name', 'KEGG_Pathway']).T
-    # df = fdf.merge(df, how='inner', on="Name")
-    # df['hits'] = df.zscore_padj < 0.05
-    # df['logpval'] = -10*np.log10(df.zscore_padj)
+    sampleData = pd.read_csv(datadir / "sampleData.csv", index_col=0)
+    countData = pd.read_csv(list(datadir.glob("*tpms*.csv"))[0])
+    annotation_cols =config['annotation']
+    sampleID = config['sampleID'][0]
+    gene_name = st.radio('Choose gene annotation', annotation_cols)
 
-    # days = df.day.unique()
-    fdf = pd.read_csv("/Users/ansintsova/git_repos/fly_rnaseq/data/results_for_app/Test_Control_unfiltered_results_ann.kegg.csv")
-    fdf['logpval'] = -10 * np.log10(fdf.padj)
-    fdf['logpval'] = fdf['logpval'].fillna(0.1)
-    fdf['hits'] = fdf.padj < 0.05
-    pathways = fdf.KEGG_Pathway.dropna().unique()
-    p = st.selectbox('Choose Pathway', pathways)
-    #d = st.selectbox('Choose day', days)
-    subDf = fdf[(fdf.KEGG_Pathway == p)].sort_values('log2FoldChange')
-    fig = px.scatter(subDf, x='Symbol', y='log2FoldChange', size='logpval',
-                     category_orders={"Symbol": subDf.Symbol.values},
-                     color_discrete_map={
-                         True: clrs[1],
-                         False: clrs[0]},
-                     labels={'Name': '', 'z-score': 'Gene LFC'},
-                     height=700,
-                     color='hits')
-    fig.add_hline(y=0, line_width=2, line_dash="dash", line_color="grey",
-                  )
-    fig.update_layout(autosize=True, font=dict(size=18), paper_bgcolor='rgba(0,0,0,0)',
-                      )
-    fig.update_traces(marker=dict(
-                                  line=dict(width=2,
-                                            color='DarkSlateGrey')),
-                      selector=dict(mode='markers'))
-    st.plotly_chart(fig, use_container_width=True)
+    with st.expander('Show Gene Expression'):
+        df = countData.set_index(gene_name).copy()
+        df = df.apply(lambda x: np.log2(x + 0.5) if np.issubdtype(x.dtype, np.number) else x)
+        sampleDataAb = sampleData.reset_index()
+        df = df.reset_index()
+        c1, c2 = st.columns(2)
+        compare_by = c1.selectbox('Compare by', sampleDataAb.columns)
+        color_by = c2.selectbox('Color by',  list(sampleDataAb.columns))
+        genes = st.multiselect("Choose gene(s) of interest", df[gene_name].unique())
 
-    # gene_info = pd.read_csv('./data/SL1344_test/Path/S6_RNA-seq_aerobic_to_anaerobic.csv', index_col=0).to_dict()['lfc']
-    # #gene_info = {"xapA": 7.387150687875563, "xapB": 7.5306018918703765, "speF": 8.340221502890024}
-    # builder = Builder(
-    #     map_name= 'iJO1366.Central metabolism',
-    #     #model_name='e_coli_core',
-    #
-    # )
-    # builder.gene_info = gene_info
-    # builder.save_html('./data/example_map.html')
-    # HtmlFile = open("./data/example_map.html", 'r', encoding='utf-8')
-    # source_code = HtmlFile.read()
-    # components.html(source_code, height=800)
+        if not genes:
+            st.stop()
+        c3, c4 = st.columns(2)
+        tpm_label = 'log2 (TPM)'
+        for col, gene in zip(cycle([c3, c4]), genes):
+            gene_df = df[df[gene_name] == gene]
+            samples = list(sampleDataAb[sampleID].values)
+            gene_df = gene_df[[gene_name] + samples]
+
+            gene_df = (gene_df.melt(id_vars=[gene_name], value_name=tpm_label, var_name=sampleID)
+                       .merge(sampleData, how='left', on=sampleID))
+            gene_df = gene_df.sort_values(compare_by)
+            fig = px.box(gene_df, title=gene, x=compare_by, y=tpm_label, color=color_by,
+                           hover_data=[gene_name] + list(sampleData.columns))
+            fig.update_layout({'paper_bgcolor': 'rgba(0,0,0,0)', 'plot_bgcolor': 'rgba(0,0,0,0)'}, autosize=True,
+                              font=dict(size=16))
+            fig.update_yaxes(showgrid=True, gridwidth=0.5, gridcolor='LightGrey')
+            col.plotly_chart(fig, use_container_width=True)

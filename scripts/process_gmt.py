@@ -21,7 +21,7 @@ def merge_with_results(results_files, gmt_df, left_on):
 
 
 if __name__ == "__main__":
-    gmt_file = "/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq/ath.gmt"
+    gmt_file = "/data/ath_rnaseq/old/ath.gmt"
     res_files = ["/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq/log2tpm_expression.csv",
                 "/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq/diffab.csv"]
     gmt_df = proces_gmt(gmt_file, path_name=2)

@@ -3,7 +3,7 @@ import yaml
 
 def app(datadir):
 
-    descriptions = {'PCA': ['PCA', 'Explore patterns and identify outliers'],
+    descriptions = {'EDA': ['EDA', 'Explore patterns and identify outliers'],
                     'DiffAb': ['Differential Expression', 'Explore diffrential expresion results produced by DESeq2']
                     }
 
