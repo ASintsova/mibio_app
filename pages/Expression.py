@@ -1,5 +1,3 @@
-import escher
-from escher import Builder
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
@@ -7,6 +5,7 @@ import numpy as np
 from itertools import cycle
 import plotly.express as px
 import yaml
+
 
 def app(datadir):
     st.subheader('Gene Expression')

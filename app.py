@@ -8,19 +8,21 @@ from multipage import MultiPage
 from pages import EDA, DiffAb, Summary, Pathway, Assembly, Expression, Home
 st.set_page_config(page_title="NCCR Microbiomes ETHZ", layout='wide')
 
-DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq')
+#DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/ath_rnaseq')
+#DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/results_for_app')
 
-#DATADIR = Path('/Users/ansintsova/git_repos/tnseq_app/data/assembly_test')
-# fname = st.sidebar.file_uploader('Project Results', accept_multiple_files=False)
-# if not fname:
-#     st.stop()
-# tar = tarfile.open(fileobj=fname, mode="r:gz")
-# tar.extractall(DATADIR)
+DATADIR = Path(".")
+fname = st.sidebar.file_uploader('Project Results', accept_multiple_files=False)
+if not fname:
+    st.stop()
+tar = tarfile.open(fileobj=fname, mode="r:gz")
+tar.extractall()
 
 
-with open(DATADIR/"pages.yaml") as fh:
+
+with open("pages.yaml") as fh:
     config = yaml.safe_load(fh)
-
+st.stop()
 st.title("NCCR Microbiomes ETHZ")
 
 # Create an instance of the app

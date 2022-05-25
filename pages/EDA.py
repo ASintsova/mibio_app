@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from sklearn.decomposition import PCA
-import numpy as np
 import plotly.express as px
 
 from pathlib import Path
@@ -43,7 +42,8 @@ def app(datadir):
     with st.expander('Show PCA'):
         c1, c2 = st.columns((4, 1))
         c2.write('### PCA Options')
-        numPCs = c2.slider("Select number of Principal Components", min_value=2, max_value=50, value=10)
+        maxComponents = min(countData.shape[0], countData.shape[1])
+        numPCs = c2.slider("Select number of Principal Components", min_value=2, max_value=maxComponents, value=2)
         numGenes = c2.slider("Number of genes to use", value=500, max_value=countData.shape[0])
         choose_by = c2.selectbox('Choose genes based on highest', ['variance', 'log2FoldChange (not implemented)'])
         pDf, pc_var = find_PCs(countData, sampleData, numPCs, numGenes, choose_by)
