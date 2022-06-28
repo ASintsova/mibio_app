@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from itertools import cycle
-import dash_bio as dashbio
 import yaml
 import requests
 from time import sleep
