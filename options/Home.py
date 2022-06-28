@@ -4,8 +4,8 @@ import yaml
 def app(datadir):
 
     descriptions = {'EDA': ['EDA', 'Explore patterns and identify outliers'],
-                    'DiffAb': ['Differential Gene Expression', 'Explore diffrential expresion results produced by DESeq2'],
-                    'Expression': ['Explore expression levels for any gene of interest']}
+                    'DiffAb': ['Differential Expression', 'Explore diffrential expresion results produced by DESeq2'],
+                    'Expression': ['Gene Expression', 'Explore expression levels for any gene of interest']}
 
     with open(datadir / "pages.yaml") as fh:
         config = yaml.safe_load(fh)
